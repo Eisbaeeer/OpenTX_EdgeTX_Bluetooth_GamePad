@@ -61,16 +61,6 @@ C:\Users\<usernmae>\.platformio\platforms\espressif32\boards\seeed_xiao_esp32c3.
 
 ```
 plattformio.ini
-
-[env:seeed_xiao_esp32c3]
-platform = espressif32
-board = seeed_xiao_esp32c3
-framework = arduino
-upload_protocol = esptool
-upload_speed = 921600
-lib_extra_dirs = C:\Arduino\libraries
-upload_port = COM14
-build_flags =
 [env:seeed_xiao_esp32c3]
 platform = https://github.com/platformio/platform-espressif32.git
 board = seeed_xiao_esp32c3
