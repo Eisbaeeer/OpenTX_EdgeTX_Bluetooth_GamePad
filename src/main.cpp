@@ -15,6 +15,10 @@ The serial port and PINs must be defined accordingly
 In this case serial port 1 PINs 20 and 21 are used
 The LED is optional...
 
+The DISCONNECTPIN allows you to delete the bond to an other device. In this case you 
+will be able to bond to an other device. It will delete the actual connected device to 
+your remote.
+
 Check out and download these libraries (thanks to the contributors)
 
 |-- Bolder Flight Systems SBUS @ 7.0.0
@@ -34,13 +38,51 @@ https://github.com/h2zero/NimBLE-Arduino
 #include <BleGamepad.h>
 #include "sbus.h"
 #include <FastLED.h>
+// OTA
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WebServer.h>
+#include <ElegantOTA.h>
 
+// Pin definitions
 #define RX_PIN 20
 #define TX_PIN 21
 #define LED_PIN 7
+#define DISCONNECTPIN 9
 
 boolean debug_console = false;
 
+// OTA
+const char* host = "ESP32-C3-EdgeTX-Bluetooth";
+const char* ssid = "EdgeTX-BT-OTA";
+const char* password = "12345678";
+String hostname = "EdgeTX";
+WebServer server(80);
+unsigned long ota_progress_millis = 0;
+
+void onOTAStart() {
+  // Log when OTA has started
+  Serial.println("OTA update started!");
+  // <Add your own code here>
+}
+
+void onOTAProgress(size_t current, size_t final) {
+  // Log every 1 second
+  if (millis() - ota_progress_millis > 1000) {
+    ota_progress_millis = millis();
+    Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
+  }
+}
+
+void onOTAEnd(bool success) {
+  // Log when OTA has finished
+  if (success) {
+    Serial.println("OTA update finished successfully!");
+  } else {
+    Serial.println("There was an error during OTA update!");
+  }
+  // <Add your own code here>
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //LEd object
@@ -77,7 +119,32 @@ void LED_pulse(String);
 void setup()
 {
 
+    WiFi.mode(WIFI_AP);  
+    WiFi.softAP(ssid, password);
+    WiFi.softAP(hostname.c_str());
     delay(1000);
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.println("*WiFi-AP-Mode*");
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
+    delay(1000);
+
+    // OTA
+    server.on("/", []() {
+    server.send(200, "text/plain", "Hi! This is EdgeTX Bluetooth module. For updating type ip-address/update !");
+  });
+
+  ElegantOTA.begin(&server);    // Start ElegantOTA
+  // ElegantOTA callbacks
+  ElegantOTA.onStart(onOTAStart);
+  ElegantOTA.onProgress(onOTAProgress);
+  ElegantOTA.onEnd(onOTAEnd);
+
+  server.begin();
+  Serial.println("HTTP server started");
+
+    //Setup Pins bluetooth
+    pinMode(DISCONNECTPIN, INPUT_PULLUP);
 
     //LED init
     FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, 1);
@@ -113,9 +180,7 @@ void setup()
 void loop()
 {
 
-
-
-    if (sbus_rx.Read())
+  if (sbus_rx.Read())
     {
         sbus_data_in = sbus_rx.ch();
 
@@ -198,7 +263,20 @@ void loop()
          }
          LED_single_color("blue");
       }
+      // Force disconnecting bluetooth
+      if (digitalRead(DISCONNECTPIN) == LOW) // On my board, pin 0 is LOW for pressed
+        {   
+            bool pairingResult = bleGamepad.enterPairingMode();
 
+            if(pairingResult)
+            {
+              Serial.println("New device paired successfully"); 
+            }
+            else
+            {
+              Serial.println("No new device paired");
+            }
+        }
     }
     else
     {
@@ -210,6 +288,10 @@ void loop()
       //LED_blink(1, "blue", 500);
       isconnected = false;
     }
+  
+  // OTA handle
+  server.handleClient();
+  ElegantOTA.loop();
 
 }//end main
 

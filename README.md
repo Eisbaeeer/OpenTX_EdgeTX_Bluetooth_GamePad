@@ -130,24 +130,8 @@ https://www.thingiverse.com/thing:5515977
 #### 20250601  Eisbaeeer ####
   - Added neeeded libs to lib directory
   - Added needed libs to platformio.ini
-  - Added binary to binary folder
-
-### Limitation:
-
-it seems that the **ESP32C3** is only able to "bond/pair" to ONE device and store the connection settings for this single device. If you connect to let's say a PC and later on you connect to another device, then the ESP32 gets stuck in during the bluetooth init phase. this seems to be an issue related to the NIMBLE bluetooth stack. this means you need to unpair/delete/forget the device BEFORE you connect it to another device. 
-
-#### how to recover:
-if the device get stuck and doesn't boot, you need to "erase the flash" and reflash it via arduino or platform.io again:
-
-```
-erase flash:
-python.exe esptool.py --chip esp32c3 --port COM14 --before usb_reset --after hard_reset erase_flash
-
-to avoid reflashing, you can limit the maximum allowed bonds to 1 
-
-
-=> NimBLE-Arduino\src\nimconfig.h
-CONFIG_BT_NIMBLE_MAX_BONDS 1
-```
-
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fmoschotto%2FOpenTX_EdgeTX_Bluetooth_GamePad&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+  - Added firmware to binary folder
+  - Added Bluetooth disconnect button
+  Now it´s possible to un-pair / delete the bluetooth connection. You must add a pushbutton on GPIO9.
+  - Added OTA update via Wifi
+  You can update new firmware via Wifi. Connect to Wifi EdgeTX and open 192.168.4.1/update
