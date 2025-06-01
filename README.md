@@ -71,9 +71,23 @@ upload_speed = 921600
 lib_extra_dirs = C:\Arduino\libraries
 upload_port = COM14
 build_flags =
-                ;-DCORE_DEBUG_LEVEL=5
-                -DARDUINO_USB_CDC_ON_BOOT=1
-                -DARDUINO_USB_MODE=1
+[env:seeed_xiao_esp32c3]
+platform = https://github.com/platformio/platform-espressif32.git
+board = seeed_xiao_esp32c3
+framework = arduino
+upload_protocol = esptool
+upload_speed = 921600
+upload_port = COM8
+monitor_speed = 115200
+monitor_port = COM8
+build_flags = 
+	-DARDUINO_USB_CDC_ON_BOOT=1
+	-DARDUINO_USB_MODE=1
+lib_deps = 
+	h2zero/NimBLE-Arduino@^2.3.0
+	fastled/FastLED@^3.9.19
+	https://github.com/lemmingDev/ESP32-BLE-Gamepad
+
 
 ```
 ### Radio setup:
@@ -121,7 +135,12 @@ https://github.com/FastLED/FastLED
 i.e. for RADIOMASTER Zorrow  
 https://www.thingiverse.com/thing:5515977
 
+### Changelog
 
+## 0250601  Eisbaeeer ##
+  - Added neeeded libs to lib directory
+  - Added needed libs to platformio.ini
+  - Added binary to binary folder
 
 ### Limitation:
 
